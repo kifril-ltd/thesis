@@ -103,6 +103,7 @@ export default {
         structId: this.currTable,
         tableColumns: this.header,
         prefix: prefix,
+        tableName: this.currTable.object,
       });
     },
 
