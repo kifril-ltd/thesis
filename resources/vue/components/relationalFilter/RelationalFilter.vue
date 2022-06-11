@@ -14,7 +14,7 @@
 
     <div class="d-flex align-items-center justify-content-center">
       <energy-button class="not-full btn-primary ms-1 me-1"> Открыть</energy-button>
-      <energy-button class="not-full btn-success ms-1 me-1"> Сохранить</energy-button>
+      <energy-button class="not-full btn-success ms-1 me-1" @click="printData"> Сохранить</energy-button>
     </div>
   </div>
 </template>
@@ -78,6 +78,9 @@ export default {
     },
   },
   methods: {
+    printData() {
+      console.log(this.treeData);
+    },
     chooseTable(table) {
       this.currTable = table;
       this.addObject(this.treeData, this.currGroup);
@@ -100,7 +103,6 @@ export default {
         isGroup: false,
         isObject: true,
         isField: false,
-        structId: this.currTable,
         tableColumns: this.header,
         prefix: prefix,
         tableName: this.currTable.object,

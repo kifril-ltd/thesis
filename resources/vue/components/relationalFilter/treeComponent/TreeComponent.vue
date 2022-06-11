@@ -32,12 +32,12 @@
               <energy-select :hints="groupObjectLogic" @change-value="changePrefix" class="ms-2 me-2"></energy-select>
               <template v-if="item.isField">
                 <energy-select :hints="fieldLogic" @change-value="changeCondition" class="ms-2 me-2"></energy-select>
-                <energy-input class="me-2 static-input"></energy-input>
+                <energy-input @change-text="changeCondVal" class="me-2 static-input"></energy-input>
               </template>
             </template>
             <template v-if="someData == 0 && item.isField">
               <energy-select :hints="fieldLogic" @change-value="changeCondition" class="ms-2 me-2"></energy-select>
-              <energy-input class="me-2 static-input"></energy-input>
+              <energy-input @change-text="changeCondVal" class="me-2 static-input"></energy-input>
             </template>
 
             {{ item.name }}
@@ -222,6 +222,12 @@ export default {
     },
     newCondition(item, condition) {
       item.condition = condition;
+    },
+    changeCondVal(value) {
+      this.newValue(this.item, value);
+    },
+    newValue(item, value) {
+      item.value = value;
     },
     getUpFlag(key) {
       if (key > 0) return true;

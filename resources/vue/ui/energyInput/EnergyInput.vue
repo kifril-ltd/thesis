@@ -1,5 +1,10 @@
 <template>
-  <input class="form-control" :value="value" :placeholder="placeholder" />
+  <input
+    @change="$emit('changeText', $event.target.value)"
+    class="form-control"
+    :value="value"
+    :placeholder="placeholder"
+  />
 </template>
 
 <script>
