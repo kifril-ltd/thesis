@@ -5,24 +5,38 @@
         <div data-toggle="tooltip" title="Раскрыть ветвь">
           <energy-icon
             @click="toggle"
-            v-if="isFolderGroup || isFolderObject || isFolderField"
+            v-if="(isFolderGroup || isFolderObject || isFolderField) && !isOpen"
             width="25px"
             height="25px"
             icon="plusRow"
+          />
+
+          <energy-icon
+            @click="toggle"
+            v-if="(isFolderGroup || isFolderObject || isFolderField) && isOpen"
+            width="25px"
+            height="25px"
+            icon="minusRow"
           />
         </div>
         <div :class="folderClass" class="group-box">
           <div class="d-flex align-items-center">
             <!-- TODO LOGIC -->
-            <energy-select v-if="!item.parentName" :hints="parentLogic" class="ms-2 me-2"></energy-select>
+            <energy-select
+              v-if="!item.parentName || someData == 0"
+              :hints="parentLogic"
+              class="ms-2 me-2"
+              @change-value="changePrefix"
+            ></energy-select>
             <template v-else>
               <energy-select
                 v-if="item.isGroup || item.isObject"
                 :hints="groupObjectLogic"
+                @change-value="changePrefix"
                 class="ms-2 me-2"
               ></energy-select>
               <template v-else>
-                <energy-select :hints="fieldLogic" class="ms-2 me-2"></energy-select>
+                <energy-select :hints="fieldLogic" @change-value="changePrefix" class="ms-2 me-2"></energy-select>
                 <energy-input class="me-2 static-input"></energy-input>
               </template>
             </template>
@@ -100,13 +114,14 @@
       <tree-component
         @up-branch="upBranch"
         @down-branch="downBranch"
-        v-for="(child, key) in item.objects"
+        v-for="(child, key) in item.tables"
         :key="key"
         :item="child"
         @remove-object="removeFromObject"
         @add-field="addField"
         :up-flag="getUpFlag(key)"
         :down-flag="getDownFlag(key, isFolderObject)"
+        :some-data="key"
       ></tree-component>
     </ul>
     <!-- Вывод полей -->
@@ -114,12 +129,13 @@
       <tree-component
         @up-branch="upBranch"
         @down-branch="downBranch"
-        v-for="(child, key) in item.fields"
+        v-for="(child, key) in item.columns"
         :key="key"
         :item="child"
         @remove-field="removeFromField"
         :up-flag="getUpFlag(key)"
         :down-flag="getDownFlag(key, isFolderField)"
+        :some-data="key"
       ></tree-component>
     </ul>
     <!-- Вывод групп -->
@@ -135,6 +151,7 @@
         @remove-group="removeFromGroup"
         :up-flag="getUpFlag(key)"
         :down-flag="getDownFlag(key, isFolderGroup)"
+        :some-data="key"
       ></tree-component>
     </ul>
   </ul>
@@ -166,6 +183,10 @@ export default {
       required: false,
       default: true,
     },
+    someData: {
+      type: Number,
+      required: false,
+    },
   },
   data() {
     return {
@@ -173,19 +194,34 @@ export default {
       isOpen: false,
       // поля таблицы
       header: null,
-      parentLogic: ['', 'НЕ'],
-      groupObjectLogic: ['И', 'ИЛИ', 'НЕ И', 'НЕ ИЛИ'],
-      fieldLogic: ['СОДЕРЖИТ', 'БОЛЬШЕ', 'МЕНЬШЕ', 'РАВНО', 'AVG', 'SUM', 'MIN', 'MAX', 'COUNT'],
+      parentLogic: [
+        { caption: '', value: '' },
+        { caption: 'НЕ', value: 'not' },
+      ],
+      groupObjectLogic: [
+        { caption: 'И', value: 'and' },
+        { caption: 'ИЛИ', value: 'or' },
+      ],
+      fieldLogic: [
+        { caption: 'СОДЕРЖИТ', value: 'like' },
+        { caption: 'БОЛЬШЕ', value: '>' },
+        { caption: 'МЕНЬШЕ', value: '<' },
+        { caption: 'РАВНО', value: '=' },
+      ],
     };
   },
   methods: {
+    changePrefix(prefix) {
+      this.newPrefix(this.item, prefix);
+    },
+    newPrefix(item, prefix) {
+      item.prefix = prefix;
+    },
     getUpFlag(key) {
       if (key > 0) return true;
       else return false;
     },
     getDownFlag(key, length) {
-      console.log(key);
-      console.log(length - 1);
       if (key < length - 1) return true;
       else return false;
     },
@@ -198,10 +234,10 @@ export default {
         this.up(this.item, item, 'groups');
       }
       if (item.isObject) {
-        this.up(this.item, item, 'objects');
+        this.up(this.item, item, 'tables');
       }
       if (item.isField) {
-        this.up(this.item, item, 'fields');
+        this.up(this.item, item, 'columns');
       }
     },
     downBranch(item) {
@@ -209,10 +245,10 @@ export default {
         this.down(this.item, item, 'groups');
       }
       if (item.isObject) {
-        this.down(this.item, item, 'objects');
+        this.down(this.item, item, 'tables');
       }
       if (item.isField) {
-        this.down(this.item, item, 'fields');
+        this.down(this.item, item, 'columns');
       }
     },
     up(tree, item, upKey) {
@@ -273,7 +309,8 @@ export default {
           isObject: false,
           isField: false,
           groups: [],
-          objects: [],
+          tables: [],
+          prefix: 'and',
         });
       } else {
         item.groups = [
@@ -284,8 +321,9 @@ export default {
             isGroup: true,
             isObject: false,
             isField: false,
+            prefix: '',
             groups: [],
-            objects: [],
+            tables: [],
           },
         ];
       }
@@ -304,7 +342,7 @@ export default {
     },
     // удаление
     removeFromObject(object) {
-      this.deleteNode(this.item, object, 'objects');
+      this.deleteNode(this.item, object, 'tables');
     },
     // РАБОТА С ОБЪЕКТОМ (END)
 
@@ -316,7 +354,7 @@ export default {
     },
     // удаление
     removeFromField(field) {
-      this.deleteNode(this.item, field, 'fields');
+      this.deleteNode(this.item, field, 'columns');
     },
     // РАБОТА С ПОЛЕМ (END)
 
@@ -359,14 +397,14 @@ export default {
     },
     // проверка на дочерние компоненты у объекта
     isFolderObject() {
-      return this.item.objects && this.item.objects.length;
+      return this.item.tables && this.item.tables.length;
     },
     isFolderField() {
-      return this.item.fields && this.item.fields.length;
+      return this.item.columns && this.item.columns.length;
     },
     // css-класс для компонентов
     folderClass() {
-      if ((this.item.groups && this.item.groups.length) || (this.item.objects && this.item.objects.length)) {
+      if ((this.item.groups && this.item.groups.length) || (this.item.tables && this.item.tables.length)) {
         return '';
       } else {
         return 'not-folder';

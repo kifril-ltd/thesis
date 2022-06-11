@@ -1,9 +1,7 @@
 <template>
   <ul>
     <li>
-      <energy-button @click="$emit('choose', item.structure_id)" class="mb-2 not-full">{{
-        item.caption
-      }}</energy-button>
+      <energy-button @click="$emit('choose', item)" class="mb-2 not-full">{{ item.caption }}</energy-button>
     </li>
     <ul v-if="isFolder">
       <modal-item-component

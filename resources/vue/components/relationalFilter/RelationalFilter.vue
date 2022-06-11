@@ -13,8 +13,8 @@
     </ul>
 
     <div class="d-flex align-items-center justify-content-center">
-      <energy-button class="not-full btn-primary ms-1 me-1"> Открыть </energy-button>
-      <energy-button class="not-full btn-success ms-1 me-1"> Сохранить </energy-button>
+      <energy-button class="not-full btn-primary ms-1 me-1"> Открыть</energy-button>
+      <energy-button class="not-full btn-success ms-1 me-1"> Сохранить</energy-button>
     </div>
   </div>
 </template>
@@ -25,8 +25,8 @@ import ObjectCard from '@/components/relationalFilter/objectModal/ObjectModal';
 import ColumnModal from '@/components/relationalFilter/columnModal/ColumnModal';
 import { EnergyButton } from '@/ui';
 
-import { TableApi } from '@/api';
-import { userSymbol, menuSymbol } from '@/store';
+import { RelationFilterApi } from '@/api';
+import { userSymbol, tableSymbol } from '@/store';
 
 export default {
   name: 'RelationalFilter',
@@ -35,8 +35,8 @@ export default {
     userState: {
       from: userSymbol,
     },
-    stateMenu: {
-      from: menuSymbol,
+    stateTables: {
+      from: tableSymbol,
     },
   },
   data() {
@@ -48,17 +48,18 @@ export default {
       //  isGroup: * флаг, является ли группой,
       //  isObject: * флаг, является ли объектом,
       //  groups: [...] массив групп,
-      //  objects: [...]} массив объектов,
+      //  tables: [...]} массив объектов,
       treeData: {
         name: 'Группа',
         level: 0,
+        prefix: '',
         isGroup: true,
         isObject: false,
         isField: false,
         groups: [],
-        objects: [],
+        tables: [],
       },
-      structureId: null,
+      currTable: null,
       currGroup: null,
       currObject: null,
       header: null,
@@ -66,34 +67,21 @@ export default {
   },
   watch: {
     // смотрим за новым объектом
-    structureId: {
+    currTable: {
       immediate: true,
-      async handler() {
-        if (this.structureId) {
-          await this.fetchTableData();
+      handler() {
+        if (this.currTable) {
+          this.header = this.currTable.columns;
           this.newObject(this.currGroup);
         }
       },
     },
   },
   methods: {
-    chooseTable(structureId) {
-      this.structureId = structureId;
-
+    chooseTable(table) {
+      this.currTable = table;
       this.addObject(this.treeData, this.currGroup);
-    },
-
-    // получение данных об объекте
-    async fetchTableData() {
-      const data = {
-          page: 1,
-          limit: 0,
-          filter: {},
-        },
-        response = await TableApi.getTable(this.structureId, data);
-      if (response?.result) {
-        this.header = response.result.header;
-      }
+      console.log(table);
     },
     makeObject(item) {
       this.$refs.objectModal.openModal();
@@ -101,15 +89,20 @@ export default {
     },
     // создание нового объекта
     newObject(item) {
-      item.objects.push({
-        name: this.getLabel,
+      let prefix = '';
+      if (item.tables && item.tables.length) {
+        prefix = 'and';
+      }
+      item.tables.push({
+        name: this.currTable.caption,
         parentName: item.name,
         level: item.level + 1,
         isGroup: false,
         isObject: true,
         isField: false,
-        structId: this.structureId,
-        columns: this.header,
+        structId: this.currTable,
+        tableColumns: this.header,
+        prefix: prefix,
       });
     },
 
@@ -122,9 +115,9 @@ export default {
         if (key == 'groups') {
           for (let i in tree[key]) {
             if (tree[key][i].name == obj.parentName) {
-              for (let j in tree[key][i].objects) {
-                if (tree[key][i].objects[j].name == obj.name) {
-                  tree[key][i].objects[j] = obj;
+              for (let j in tree[key][i].tables) {
+                if (tree[key][i].tables[j].name == obj.name) {
+                  tree[key][i].tables[j] = obj;
                   continue;
                 }
               }
@@ -135,17 +128,18 @@ export default {
       this.treeData = tree;
     },
     chooseAttribute(attribute) {
-      if (this.currObject.fields && this.currObject.fields.length) {
-        this.currObject.fields.push({
+      if (this.currObject.columns && this.currObject.columns.length) {
+        this.currObject.columns.push({
           name: attribute.caption,
           parentName: this.currObject.name,
           level: this.currObject.level + 1,
           isGroup: false,
           isObject: false,
           isField: true,
+          prefix: 'like',
         });
       } else {
-        this.currObject.fields = [
+        this.currObject.columns = [
           {
             name: attribute.caption,
             parentName: this.currObject.name,
@@ -153,6 +147,7 @@ export default {
             isGroup: false,
             isObject: false,
             isField: true,
+            prefix: '',
           },
         ];
       }
@@ -176,20 +171,6 @@ export default {
     // текущий юзер
     user() {
       return this.userState.state.user;
-    },
-    // список всего меню
-    childrenMenu() {
-      return this.stateMenu.allMenuElements;
-    },
-    // меню в структурированном варианте
-    menu() {
-      return this.stateMenu.state.menu;
-    },
-    // получение лейбла таблицы
-    getLabel() {
-      if (this.structureId && this.menu)
-        return this.childrenMenu.find(item => item.structure_id === this.structureId)?.caption ?? '';
-      else return '';
     },
   },
 };

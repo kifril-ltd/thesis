@@ -20,7 +20,7 @@
 
 <script>
 import ModalItemComponent from '@/components/relationalFilter/objectModal/ModalItemComponent';
-import { menuSymbol, userSymbol } from '@/store';
+import { tableSymbol, userSymbol } from '@/store';
 import { EnergyModal } from '@/ui';
 
 export default {
@@ -30,8 +30,8 @@ export default {
     ModalItemComponent,
   },
   inject: {
-    stateMenu: {
-      from: menuSymbol,
+    stateTable: {
+      from: tableSymbol,
     },
     userState: {
       from: userSymbol,
@@ -39,7 +39,7 @@ export default {
   },
   async created() {
     if (this.user) {
-      await this.stateMenu.fetchMenu();
+      await this.stateTable.fetchTables();
     }
   },
   methods: {
@@ -56,7 +56,7 @@ export default {
   },
   computed: {
     objects() {
-      return this.stateMenu.state.menu;
+      return this.stateTable.state.tables;
     },
     user() {
       return this.userState.state.user;

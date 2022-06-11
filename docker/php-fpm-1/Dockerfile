@@ -9,7 +9,10 @@ RUN set -ex \
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 494c81787d5d1001dea22555e7304857b383af22
 
 
 

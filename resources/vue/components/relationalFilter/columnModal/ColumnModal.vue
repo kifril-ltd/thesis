@@ -4,9 +4,9 @@
       <h5 class="modal-title" id="staticBackdropLabel">Выбор атрибута</h5>
       <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
     </div>
-    <div class="modal-body p-3">
+    <div class="modal-body d-flex flex-column p-3">
       <template v-if="object">
-        <energy-button v-for="(column, key) in object.columns" class="mb-2" :key="key" @click="choose(column)">
+        <energy-button v-for="(column, key) in object.tableColumns" class="mb-2" :key="key" @click="choose(column)">
           {{ column.caption }}
         </energy-button>
       </template>
