@@ -29,17 +29,17 @@
               @change-value="changePrefix"
             ></energy-select>
             <template v-else>
-              <energy-select
-                v-if="item.isGroup || item.isObject"
-                :hints="groupObjectLogic"
-                @change-value="changePrefix"
-                class="ms-2 me-2"
-              ></energy-select>
-              <template v-else>
-                <energy-select :hints="fieldLogic" @change-value="changePrefix" class="ms-2 me-2"></energy-select>
+              <energy-select :hints="groupObjectLogic" @change-value="changePrefix" class="ms-2 me-2"></energy-select>
+              <template v-if="item.isField">
+                <energy-select :hints="fieldLogic" @change-value="changeCondition" class="ms-2 me-2"></energy-select>
                 <energy-input class="me-2 static-input"></energy-input>
               </template>
             </template>
+            <template v-if="someData == 0 && item.isField">
+              <energy-select :hints="fieldLogic" @change-value="changeCondition" class="ms-2 me-2"></energy-select>
+              <energy-input class="me-2 static-input"></energy-input>
+            </template>
+
             {{ item.name }}
           </div>
           <div class="d-flex align-items-center justify-content-end">
@@ -216,6 +216,12 @@ export default {
     },
     newPrefix(item, prefix) {
       item.prefix = prefix;
+    },
+    changeCondition(condition) {
+      this.newCondition(this.item, condition);
+    },
+    newCondition(item, condition) {
+      item.condition = condition;
     },
     getUpFlag(key) {
       if (key > 0) return true;

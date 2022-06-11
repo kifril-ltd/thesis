@@ -137,7 +137,9 @@ export default {
           isGroup: false,
           isObject: false,
           isField: true,
-          prefix: 'like',
+          condition: 'like',
+          prefix: 'and',
+          columnName: attribute.object,
         });
       } else {
         this.currObject.columns = [
@@ -149,6 +151,8 @@ export default {
             isObject: false,
             isField: true,
             prefix: '',
+            condition: 'like',
+            columnName: attribute.object,
           },
         ];
       }

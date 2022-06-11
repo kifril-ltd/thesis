@@ -6,9 +6,13 @@
     </div>
     <div class="modal-body d-flex flex-column p-3">
       <template v-if="object">
-        <energy-button v-for="(column, key) in object.tableColumns" class="mb-2" :key="key" @click="choose(column)">
-          {{ column.caption }}
-        </energy-button>
+        <ul v-for="(column, key) in object.tableColumns" class="mb-2" :key="key" @click="choose(column)">
+          <li>
+            <energy-button class="mb-2 not-full">
+              {{ column.caption }}
+            </energy-button>
+          </li>
+        </ul>
       </template>
     </div>
     <div class="modal-footer">
@@ -50,5 +54,11 @@ export default {
 <style scoped>
 .modal-body {
   overflow-y: auto;
+}
+
+ul,
+li {
+  list-style-type: none;
+  margin: 0;
 }
 </style>
