@@ -26,7 +26,7 @@ class RelationFilterController extends Controller
             ->select(['meta_object_id', 'object', 'caption'])
             ->get()
             ->toArray();
-        return new JsonResponse($entities);
+        return new JsonResponse(['result' => $entities]);
     }
 
     public function getRelations()
