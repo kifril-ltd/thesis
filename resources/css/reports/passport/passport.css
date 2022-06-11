@@ -1,0 +1,90 @@
+@page {
+    font-size: 16px;
+}
+
+.page-break {
+    page-break-after: always;
+}
+
+.page-center {
+    display: block;
+    margin-top: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.text-center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+.section {
+    font-weight: bold;
+}
+
+.title {
+    font-size: 25px;
+}
+
+.sub-title {
+    font-size: 20px;
+}
+
+p {
+    line-height: 1;
+}
+
+table {
+    width: 100%;
+}
+
+.tg {
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0px auto;
+}
+
+.tg td {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    font-size: 14px;
+    overflow: hidden;
+    padding: 10px 5px;
+    word-break: normal;
+}
+
+.tg th {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    font-size: 14px;
+    font-weight: normal;
+    overflow: hidden;
+    padding: 10px 5px;
+    word-break: normal;
+}
+
+.tg .tg-center {
+    border-color: inherit;
+    text-align: center;
+    vertical-align: center;
+}
+
+.tg .tg-left {
+    border-color: inherit;
+    text-align: left;
+    vertical-align: center;
+}
+
+.sub-totals {
+    font-weight: bold ;
+}
+
+.totals {
+    font-weight: bold;
+    background-color: #4e9a06a0;
+}

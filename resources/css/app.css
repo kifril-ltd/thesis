@@ -1,0 +1,9 @@
+* {
+    box-sizing: border-box;
+    font-weight: bold;
+}
+
+.big-container {
+    width: 90vw;
+    margin: 0 auto;
+}
