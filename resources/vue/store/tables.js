@@ -10,8 +10,7 @@ export const createStateTables = () => {
 
     const fetchTables = async () => {
         const { result } = await RelationFilterApi.getTables();
-        if (result) state.tables.push(...result);
-        return result;
+        if (result) state.tables = result;
     };
 
     return {
