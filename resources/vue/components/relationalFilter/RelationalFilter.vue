@@ -2,15 +2,31 @@
   <div class="container mt-3 mb-3">
     <object-card ref="objectModal" @choose="chooseTable" />
     <column-modal ref="columnModal" :object="currObject" @choose="chooseAttribute" />
-
-    <ul>
-      <tree-component
-        @make-object="makeObject"
-        @add-field="addEmitField"
-        :structure-id="structureId"
-        :item="treeData"
-      ></tree-component>
+    <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab">
+          Условия
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#file" type="button" role="tab"> Колонки </button>
+      </li>
     </ul>
+    <div class="tab-content">
+      <div class="tab-pane fade show active" id="home" role="tabpanel">
+        <ul class="mt-3">
+          <tree-component
+            @make-object="makeObject"
+            @add-field="addEmitField"
+            :structure-id="structureId"
+            :item="treeData"
+          ></tree-component>
+        </ul>
+      </div>
+      <div class="tab-pane fade" id="file" role="tabpanel">
+        <column-component :tables="objects"></column-component>
+      </div>
+    </div>
 
     <div class="d-flex align-items-center justify-content-center">
       <energy-button class="not-full btn-primary ms-1 me-1"> Открыть</energy-button>
@@ -25,19 +41,24 @@ import ObjectCard from '@/components/relationalFilter/objectModal/ObjectModal';
 import ColumnModal from '@/components/relationalFilter/columnModal/ColumnModal';
 import { EnergyButton } from '@/ui';
 
-import { RelationFilterApi } from '@/api';
-import { userSymbol, tableSymbol } from '@/store';
+import { tableSymbol, userSymbol } from '@/store';
+import ColumnComponent from '@/components/relationalFilter/ColumnComponent/ColumnComponent';
 
 export default {
   name: 'RelationalFilter',
-  components: { TreeComponent, ObjectCard, ColumnModal, EnergyButton },
+  components: { ColumnComponent, TreeComponent, ObjectCard, ColumnModal, EnergyButton },
   inject: {
+    stateTable: {
+      from: tableSymbol,
+    },
     userState: {
       from: userSymbol,
     },
-    stateTables: {
-      from: tableSymbol,
-    },
+  },
+  async created() {
+    if (this.user) {
+      await this.stateTable.fetchTables();
+    }
   },
   data() {
     return {
@@ -175,7 +196,9 @@ export default {
     },
   },
   computed: {
-    // текущий юзер
+    objects() {
+      return this.stateTable.state.tables;
+    },
     user() {
       return this.userState.state.user;
     },
