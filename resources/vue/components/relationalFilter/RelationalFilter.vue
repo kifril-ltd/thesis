@@ -101,6 +101,7 @@ export default {
   methods: {
     printData() {
       console.log(this.treeData);
+      console.log(this.objects);
     },
     chooseTable(table) {
       this.currTable = table;

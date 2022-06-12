@@ -1,8 +1,8 @@
 <template>
   <input
-    @change="$emit('changeText', $event.target.value)"
     class="form-control"
     :value="value"
+    @change.prevent="$emit('changeText', $event.target.value)"
     :placeholder="placeholder"
   />
 </template>
@@ -19,6 +19,7 @@ export default {
       required: false,
     },
   },
+  emits: ['change'],
 };
 </script>
 

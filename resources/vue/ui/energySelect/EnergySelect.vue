@@ -1,5 +1,9 @@
 <template>
-  <select class="form-select" @change="$emit('changeValue', $event.target[$event.target.selectedIndex].value)">
+  <select
+    :value="isSelect"
+    class="form-select"
+    @change="$emit('changeValue', $event.target[$event.target.selectedIndex].value)"
+  >
     <option v-for="(hint, key) in hints" :key="key" :value="hint.value">{{ hint.caption }}</option>
   </select>
 </template>
@@ -11,6 +15,11 @@ export default {
     hints: {
       type: Array,
       required: false,
+    },
+    isSelect: {
+      required: false,
+      type: String,
+      default: '',
     },
   },
 };
