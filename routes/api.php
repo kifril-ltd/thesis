@@ -25,8 +25,7 @@ Route::get('/report', [ReportController::class, 'makeReport']);
 
 Route::prefix('/relfilter')->group(function() {
     Route::get('/entities', [RelationFilterController::class, 'getEntitiesInformation']);
-    Route::get('/build', [RelationFilterController::class, 'buildReport']);
-
+    Route::post('/build', [RelationFilterController::class, 'buildReport']);
 });
 
 Route::prefix('/user')->group(function() {

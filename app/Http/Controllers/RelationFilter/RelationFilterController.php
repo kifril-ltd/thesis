@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\RelationFilter;
 
+use App\Exports\RelationFilterReportExport;
 use App\Http\Controllers\Controller;
 use App\Http\Service\RelationFilterQueryBuilder;
 use App\Models\Meta\MetaKind\MetaKind;
@@ -12,11 +13,16 @@ use Fhaculty\Graph\Graph;
 use Graphp\Algorithms\Tree\OutTree;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 use Relaxed\LCA\LowestCommonAncestor;
 
 class RelationFilterController extends Controller
 {
+    private array $headers = [];
+
     public function getEntitiesInformation(): JsonResponse
     {
         $entityKindId = MetaKind::where('name', 'object')->first()->meta_kind_id;
@@ -29,55 +35,31 @@ class RelationFilterController extends Controller
         return new JsonResponse(['result' => $entities]);
     }
 
-    public function getRelations()
-    {
-        $entityKindId = MetaKind::where('name', 'object')->first()->meta_kind_id;
-
-        $relations = MetaObject::where('meta_kind_id', $entityKindId)
-            ->with([
-                    'relations' => function ($query) {
-                        $query->select(['source_id', 'source_col_id', 'target_id'])
-                            ->with(['foreing:meta_object_id,object', 'target:meta_object_id,object']);
-                    }
-                ]
-            )
-            ->select(['meta_object_id', 'object'])
-            ->get()
-            ->toArray();
-
-        $result = [];
-        foreach ($relations as $relation) {
-            $joins = [];
-            foreach ($relation['relations'] as $join) {
-                $joins[] = [
-                    'source_col' => $join['foreing']['object'],
-                    'target' => $join['target']['object']
-                ];
-            }
-            $result[] = [
-                'source' => $relation['object'],
-                'relations' => $joins
-            ];
-        }
-
-        return $result;
-    }
-
     public function buildReport(Request $request)
     {
-        $data = json_decode($request->getContent(), true);
+        $data = json_decode($request->getContent(), true)['data'];
         $queryBuilder = new RelationFilterQueryBuilder();
-        $this->buildQueryBuilder($data['groups'], 'group', null, $queryBuilder);
+        $this->buildQueryBuilder($data['where'], 'group', null, $queryBuilder);
         $this->buildSelect($data['select'], $queryBuilder);
         $query = $queryBuilder->buildQuery();
-        dd($query);
+        $result = DB::select($query);
+
+        $report = new RelationFilterReportExport($this->headers, $result);
+
+        $filename = Carbon::now()->format('Ymdhms').'-Report.xlsx';
+        Excel::store($report, $filename);
+        $fullPath = Storage::url($filename);
+
+        return $report->download('report.csv', \Maatwebsite\Excel\Excel::CSV,  [
+            'Content-Type' => 'text/csv',
+        ]);
     }
 
     private function buildQueryBuilder($array, $type, $parent, RelationFilterQueryBuilder $queryBuilder)
     {
         foreach ($array as $item) {
             if ($type === 'group') {
-                $group = $queryBuilder->addConditionVertex($item['groupName'], 'group', $item['prefix'], $parent);
+                $group = $queryBuilder->addConditionVertex($item['name'], 'group', $item['prefix'], $parent);
                 if (isset($item['groups']) && count($item['groups']) > 0) {
                     $this->buildQueryBuilder($item['groups'], 'group', $group, $queryBuilder);
                 }
@@ -106,10 +88,17 @@ class RelationFilterController extends Controller
     {
         foreach ($select as $table) {
             foreach ($table['columns'] as $column) {
-                if ($column['aggregation']) {
-                    $queryBuilder->addAggregationFunction($table['tableName'], $column['columnName'], $column['aggregation']);
-                } else {
-                    $queryBuilder->addColumnToSelect($table['tableName'], $column['columnName']);
+                if ($column['isChecked'] || $column['isGroupBy']) {
+                    if ($column['isGroupBy']) {
+                        $queryBuilder->addGroupBy($table['object'], $column['object']);
+                    }
+                    if ($column['aggregation']) {
+                        $queryBuilder->addAggregationFunction($table['object'], $column['object'], $column['aggregation']);
+                        $this->headers[] = sprintf('%s(%s/%s)', $column['aggregation'], $table['caption'], $column['caption']);
+                    } else {
+                        $queryBuilder->addColumnToSelect($table['object'], $column['object']);
+                        $this->headers[] = sprintf('%s/%s', $table['caption'], $column['caption']);
+                    }
                 }
             }
         }

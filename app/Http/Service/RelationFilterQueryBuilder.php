@@ -12,8 +12,8 @@ use Relaxed\LCA\LowestCommonAncestor;
 
 class RelationFilterQueryBuilder
 {
-    private array $select;
-    private array $aggregation;
+    public array $select;
+    public array $aggregation;
     public Graph $conditions;
     private array $groupBy;
     private array $join;
@@ -34,6 +34,46 @@ class RelationFilterQueryBuilder
         $this->join = [];
 
         $this->buildGraph();
+    }
+
+    public function buildQuery()
+    {
+        $selectSubQuery = $this->getSelectSubQuery();
+        $whereSubQuery = $this->getWhereSubQuery();
+        $groupBySubQuery = $this->getGroupBySubQuery();
+        if ($whereSubQuery === '(())' || $whereSubQuery === '()') {
+            $where = '';
+        }
+        if (count($this->join) < 2){
+            $joinSubQuery = array_key_first($this->join);
+            $from = ' FROM ' . $joinSubQuery;
+            if ($where) {
+                $where = ' WHERE ' . $whereSubQuery;
+            }
+        }
+        else {
+            $joinSubQuery = $this->getJoinSubQuery();
+            $from = ' FROM ' . $joinSubQuery;
+            if ($where) {
+                $where = ' AND' . $whereSubQuery;
+            }
+
+        }
+
+        if ($selectSubQuery){
+            $select = 'SELECT ' . $selectSubQuery;
+        }else {
+            $select = 'SELECT *';
+        }
+
+        if ($groupBySubQuery){
+            $groupBy = ' GROUP BY ' . $groupBySubQuery;
+        }
+        else {
+            $groupBy = '';
+        }
+
+        return $select . $from . $where . $groupBy;
     }
 
     public function addColumnToSelect($table, $column)
@@ -72,22 +112,8 @@ class RelationFilterQueryBuilder
 
     public function addGroupBy($table, $column)
     {
-        $this->groupBy[] = [
-            'table' => $table,
-            'column' => $column
-        ];
-    }
-
-    public function buildQuery()
-    {
-        $selectSubQuery = $this->getSelectSubQuery();
-        $joinSubQuery = $this->getJoinSubQuery();
-        $whereSubQuery = $this->getWhereSubQuery();
-
-        $select = 'SELECT ' . $selectSubQuery;
-        $from = ' FROM ' . $joinSubQuery . ' AND ';
-        $where =  $whereSubQuery;
-        return $select . $from . $where;
+        $this->groupBy[$table] = $column;
+        $this->join[$table] = true;
     }
 
     private function buildGraph()
@@ -216,7 +242,7 @@ class RelationFilterQueryBuilder
         return implode(', ', $queryArray);
     }
 
-    private function getJoinSubQuery()
+    public function getJoinSubQuery()
     {
         $this->calculateLCA();
         $this->calculateJoinPath();
@@ -252,10 +278,6 @@ class RelationFilterQueryBuilder
         $type = $vertex->getAttribute('type');
         $value = $vertex->getAttribute('value');
 
-        if ($tree->isVertexLeaf($vertex)) {
-            $query .= $value;
-        }
-
         if ($type !== 'column' && $type !== 'value' && $type !== 'condition') {
             $query .= $value . '(';
         }
@@ -264,9 +286,20 @@ class RelationFilterQueryBuilder
             $values = [];
             /* @var $child Vertex */
             foreach ($tree->getVerticesChildren($vertex) as $child) {
-                $values[] = $child->getAttribute('value');
+                $childType = $child->getAttribute('type');
+                if ($childType === 'value'){
+                    if ($value === 'like'){
+                        $childValue = '\'%' . $child->getAttribute('value') . '%\'';
+                    }
+                    else {
+                        $childValue = '\'' . $child->getAttribute('value') . '\'';
+                    }
+                } else {
+                    $childValue =  $child->getAttribute('value');
+                }
+                $values[] =  $childValue;
             }
-            $query .= implode($value, $values);
+            $query .= implode(' ' . $value . ' ', $values);
         } else {
             /* @var $child Vertex */
             foreach ($tree->getVerticesChildren($vertex) as $child) {
@@ -276,5 +309,20 @@ class RelationFilterQueryBuilder
         if ($type !== 'column' && $type !== 'value' && $type !== 'condition') {
             $query .= ')';
         }
+    }
+
+    public function getGroupBySubQuery() {
+        $groupByArray = [];
+        foreach ($this->groupBy as $table => $column) {
+            $groupByArray[$table . '.' . $column] = true;
+        }
+        if (count($this->aggregation) > 0) {
+           foreach ($this->select as $table => $columns) {
+               foreach ($columns as $column) {
+                   $groupByArray[$table . '.' . $column] = true;
+               }
+           }
+        }
+        return implode(', ', array_keys($groupByArray));
     }
 }

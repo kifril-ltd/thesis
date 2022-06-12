@@ -43,6 +43,8 @@ import { EnergyButton } from '@/ui';
 
 import { tableSymbol, userSymbol } from '@/store';
 import ColumnComponent from '@/components/relationalFilter/ColumnComponent/ColumnComponent';
+// import {RelationFilterApi} from "@/api";
+import axios from 'axios';
 
 export default {
   name: 'RelationalFilter',
@@ -99,10 +101,28 @@ export default {
     },
   },
   methods: {
-    printData() {
-      console.log(this.treeData);
-      console.log(this.objects);
-    },
+       printData() {
+          let data = {
+              "where": [this.treeData],
+              "select": this.objects
+          }
+           axios.post('/api/relfilter/build',
+               {data,
+                   responseType: 'blob'})
+               .then(response => {
+                   console.log(response);
+                   var blob = new Blob([response.data], { type: 'text/csv' });
+                   console.log(blob);
+                   var fileURL = window.URL.createObjectURL(blob);
+                   var fileLink = document.createElement('a');
+                   fileLink.href = fileURL;
+                   fileLink.setAttribute('download', 'report.csv');
+                   document.body.appendChild(fileLink);
+                   fileLink.click();
+               }).catch(error => {
+               console.log(error)
+           })
+      },
     chooseTable(table) {
       this.currTable = table;
       this.addObject(this.treeData, this.currGroup);
