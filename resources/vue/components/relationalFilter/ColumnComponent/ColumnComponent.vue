@@ -4,9 +4,9 @@
       <template v-if="object.columns && object.columns.length">
         <div class="d-flex align-items-center">
           <p class="mb-0 me-2">{{ object.caption + ':' }}</p>
-          <a href="" class="me-1">Выбрать все поля</a>
+          <a href="#" @click="checkAll(key)" class="me-1">Выбрать все поля</a>
           <p class="mb-0 me-1">/</p>
-          <a href="" class="me-1">Снять выделение</a>
+          <a href="#" class="me-1" @click="disableAll(key)">Снять выделение</a>
         </div>
 
         <div class="d-flex flex-column ms-2">
@@ -95,6 +95,16 @@ export default {
     },
     changeFunction(key, indexRow, selected) {
       this.tableMap[key].columns[indexRow].aggregation = selected;
+    },
+    checkAll(key) {
+      for (let i = 0; i < this.tableMap[key].columns.length; i++) {
+        this.tableMap[key].columns[i].isChecked = true;
+      }
+    },
+    disableAll(key) {
+      for (let i = 0; i < this.tableMap[key].columns.length; i++) {
+        this.tableMap[key].columns[i].isChecked = false;
+      }
     },
   },
   computed: {
