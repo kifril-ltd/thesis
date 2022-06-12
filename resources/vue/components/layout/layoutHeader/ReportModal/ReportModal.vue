@@ -8,11 +8,11 @@
       <div class="d-flex flex-column justify-content-center">
         <energy-select @change-value="changeType" class="me-3 mt-3" :hints="reportTypes"></energy-select>
         <!-- Здесь должен быть список котельных -->
-        <template v-if="type === 'Паспорт котельной'">
+        <template v-if="type === 'passport'">
           <energy-select @change-value="changeBoiler" class="me-3 mt-3" :hints="tmpBoiler"></energy-select>
         </template>
 
-        <template v-if="type === 'Отчет по затратам'">
+        <template v-if="type === 'expenditures'">
           <energy-select @change-value="changeMunicipality" class="me-3 mt-3" :hints="tmpMunicipality"></energy-select>
           <div class="d-flex mt-3 align-items-center">
             <energy-checkbox @change="changeCheckbox" class="me-1"> </energy-checkbox>
@@ -67,9 +67,48 @@ export default {
   },
   data() {
     return {
-      reportTypes: ['', 'Паспорт котельной', 'Отчет по затратам'],
-      tmpBoiler: ['', 'Котельная 1', 'Котельная 2'],
-      tmpMunicipality: ['', 'Муниципалитет 1', 'Муниципалитет 2'],
+      reportTypes: [
+        {
+          caption: '',
+          value: '',
+        },
+        {
+          caption: 'Отчет по затратам',
+          value: 'expenditures',
+        },
+        {
+          caption: 'Паспорт котельной',
+          value: 'passport',
+        },
+      ],
+      tmpBoiler: [
+        {
+          caption: '',
+          value: '',
+        },
+        {
+          caption: 'Котельная 1',
+          value: 'boiler 1',
+        },
+        {
+          caption: 'Котельная 2',
+          value: 'boiler 2',
+        },
+      ],
+      tmpMunicipality: [
+        {
+          caption: '',
+          value: '',
+        },
+        {
+          caption: 'Муниципалитет 1',
+          value: 'mun1',
+        },
+        {
+          caption: 'Муниципалитет 1',
+          value: 'mun2',
+        },
+      ],
       boiler: null,
       type: null,
       checkbox: false,
@@ -93,12 +132,12 @@ export default {
       this.$refs.modal.openModal();
     },
     makeReport() {
-      if (this.type === 'Паспорт котельной') {
+      if (this.type === 'passport') {
         this.report = {
           reportType: 'passport',
           boilerRoomId: this.boiler,
         };
-      } else {
+      } else if (this.type === 'expenditures') {
         this.report = {
           reportType: 'expenditures',
           municipality: '',
@@ -148,12 +187,12 @@ export default {
   },
   computed: {
     checkBoiler() {
-      if (this.type === 'Паспорт котельной' && this.boiler && this.boiler !== '') {
+      if (this.type === 'passport' && this.boiler && this.boiler !== '') {
         return true;
       } else return false;
     },
     checkExpenditures() {
-      if ((this.checkbox || this.municipality) && this.type === 'Отчет по затратам' && this.startYear && this.endYear) {
+      if ((this.checkbox || this.municipality) && this.type === 'expenditures' && this.startYear && this.endYear) {
         return true;
       } else return false;
     },
