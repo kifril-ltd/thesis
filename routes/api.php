@@ -31,6 +31,9 @@ Route::prefix('/report')->group(function() {
 Route::prefix('/relfilter')->group(function() {
     Route::get('/entities', [RelationFilterController::class, 'getEntitiesInformation']);
     Route::post('/build', [RelationFilterController::class, 'buildReport']);
+    Route::post('/save', [RelationFilterController::class, 'save']);
+    Route::get('/{id}', [RelationFilterController::class, 'getRelationFilterById']);
+    Route::get('/', [RelationFilterController::class, 'relationFilterList']);
 });
 
 Route::prefix('/user')->group(function() {

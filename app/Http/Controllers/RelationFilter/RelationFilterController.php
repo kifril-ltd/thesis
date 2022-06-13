@@ -8,6 +8,7 @@ use App\Http\Service\RelationFilterQueryBuilder;
 use App\Models\Meta\MetaKind\MetaKind;
 use App\Models\Meta\MetaObject\JoinEntity\JoinEntity;
 use App\Models\Meta\MetaObject\MetaObject;
+use App\Models\Meta\MetaObject\RelationFilterEntity\RelationFilterEntity;
 use Fhaculty\Graph\Edge\Directed;
 use Fhaculty\Graph\Graph;
 use Graphp\Algorithms\Tree\OutTree;
@@ -16,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 use Relaxed\LCA\LowestCommonAncestor;
 
@@ -50,6 +52,30 @@ class RelationFilterController extends Controller
         Excel::store($report, $filename, 'public');
 
         return Storage::url($filename);
+    }
+
+    public function relationFilterList(Request $request) {
+        return new JsonResponse(['result' => RelationFilterEntity::all(['rel_filter_id', 'title'])->toArray()]);
+    }
+
+    public function getRelationFilterById(string $id, Request $request) {
+        $relationFilter = RelationFilterEntity::select(['settings'])->where('rel_filter_id', $id)->first();
+        return new JsonResponse(['result' => json_decode($relationFilter->settings, true)]);
+    }
+
+    public function save(Request  $request) {
+        $relfilter = json_decode($request->getContent(), true);
+        RelationFilterEntity::insert([
+           'rel_filter_id' => Str::uuid()->toString(),
+           'title' => $relfilter['title'],
+           'settings' => json_encode($relfilter['settings'])
+        ]);
+
+        return new JsonResponse([
+           'result' => [
+               'success' => true
+           ]
+        ]);
     }
 
     private function buildQueryBuilder($array, $type, $parent, RelationFilterQueryBuilder $queryBuilder)
