@@ -55,6 +55,8 @@
 
 <script>
 import { EnergyButton, EnergyCheckbox, EnergyInput, EnergyModal, EnergySelect } from '@/ui';
+import {ReportApi} from "@/api/report";
+import axios from "axios";
 
 export default {
   name: 'ReportModal',
@@ -155,13 +157,36 @@ export default {
           this.report.municipality = this.municipality;
         }
       }
-      console.log(this.report);
+      let data = this.report;
+        axios.post('/api/report/build',
+            {data
+            })
+            .then(response => {
+                console.log(response.data);
+                    const url = response.data;
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.setAttribute('download', 'report.pdf'); //or any other extension
+                    document.body.appendChild(link);
+                    link.click();
+            })
+            .catch(error => {
+            console.log(error)
+        })
     },
     changeCheckbox(flag) {
       this.checkbox = flag;
     },
-    changeType(type) {
+    async changeType(type) {
       this.type = type;
+      if (this.type === 'passport') {
+          let result = await ReportApi.getBoilerRooms(null);
+          this.tmpBoiler = result.result.map(boiler => {return {value: boiler['boiler_room_id'], caption: boiler.address}});
+      }
+      else if (this.type === 'expenditures') {
+          let result = await ReportApi.getMunicipalities();
+          this.tmpMunicipality = result.result.map(municipality => {return {value: municipality['municipality'], caption: municipality['municipality']}});
+      }
     },
     changeBoiler(boiler) {
       this.boiler = boiler;

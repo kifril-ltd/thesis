@@ -43,7 +43,7 @@ import { EnergyButton } from '@/ui';
 
 import { tableSymbol, userSymbol } from '@/store';
 import ColumnComponent from '@/components/relationalFilter/ColumnComponent/ColumnComponent';
-// import {RelationFilterApi} from "@/api";
+// import {ReportApi} from "@/api";
 import axios from 'axios';
 
 export default {
@@ -107,18 +107,14 @@ export default {
               "select": this.objects
           }
            axios.post('/api/relfilter/build',
-               {data,
-                   responseType: 'blob'})
+               {data})
                .then(response => {
-                   console.log(response);
-                   var blob = new Blob([response.data], { type: 'text/csv' });
-                   console.log(blob);
-                   var fileURL = window.URL.createObjectURL(blob);
-                   var fileLink = document.createElement('a');
-                   fileLink.href = fileURL;
-                   fileLink.setAttribute('download', 'report.csv');
-                   document.body.appendChild(fileLink);
-                   fileLink.click();
+                   const url = response.data;
+                   const link = document.createElement('a');
+                   link.href = url;
+                   link.setAttribute('download', 'report.xlsx'); //or any other extension
+                   document.body.appendChild(link);
+                   link.click();
                }).catch(error => {
                console.log(error)
            })

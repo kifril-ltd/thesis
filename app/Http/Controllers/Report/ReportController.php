@@ -8,8 +8,11 @@ use App\Models\BoilerRoom\BoilerRoomExpenditure\BoilerRoomExpenditure;
 use App\Repositories\Interfaces\BoilerRoomExpendituresRepositoryInterface;
 use App\Repositories\Interfaces\BoilerRoomPassportRepositoryInterface;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Doctrine\DBAL\Driver\IBMDB2\Exception\StatementError;
 use iio\libmergepdf\Merger;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
@@ -25,8 +28,8 @@ class ReportController extends Controller
 
     public function makeReport(Request $request)
     {
-        $data = json_decode($request->getContent(), true);
-
+        $data = json_decode($request->getContent(), true)['data'];
+        //dd($data);
         switch ($data['reportType']) {
             case 'passport':
                 $report = $this->generateBoilerRoomPassport($data);
@@ -36,11 +39,26 @@ class ReportController extends Controller
                 break;
         }
 
+        $filename = Carbon::now()->format('Ymdhms').'-Report.pdf';
+        Storage::disk('public')->put($filename, $report);
+        return Storage::url($filename);
+    }
 
-        return response($report)->withHeaders([
-            'Content-Type' => 'application/pdf',
-            'Cache-Control' => 'no-store, no-cache',
-            'Content-Disposition' => 'attachment; filename="Отчет.pdf',
+    public function getMunicipalityList() {
+        $municipality = BoilerRoom::select('municipality')->distinct()->get()->toArray();
+        return new JsonResponse([
+            'result' => $municipality
+        ]);
+    }
+
+    public function getBoilerRoomList(Request $request) {
+        $boilerRooms = BoilerRoom::select(['boiler_room_id', 'address']);
+        if($request->exists('municipality')){
+            $municipality = $request->get('municipality');
+            $boilerRooms->where('municipality', $municipality);
+        }
+        return new JsonResponse([
+            'result' => $boilerRooms->get()->toArray()
         ]);
     }
 
@@ -70,7 +88,6 @@ class ReportController extends Controller
         $merger->addRaw($boilerRoomTech->output());
         $merger->addRaw($boilerRoomBalance->output());
         $merger->addRaw($boilerRoomBoilers->output());
-
 
         return $merger->merge();
     }

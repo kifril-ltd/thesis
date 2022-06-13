@@ -13,6 +13,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/{any}', function () {
+Route::get('{all}', function () {
     return view('spa');
-})->where('any', '.*');
+})->where('all', '^(?!storage).*$');

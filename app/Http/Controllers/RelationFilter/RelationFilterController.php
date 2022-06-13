@@ -47,12 +47,9 @@ class RelationFilterController extends Controller
         $report = new RelationFilterReportExport($this->headers, $result);
 
         $filename = Carbon::now()->format('Ymdhms').'-Report.xlsx';
-        Excel::store($report, $filename);
-        $fullPath = Storage::url($filename);
+        Excel::store($report, $filename, 'public');
 
-        return $report->download('report.csv', \Maatwebsite\Excel\Excel::CSV,  [
-            'Content-Type' => 'text/csv',
-        ]);
+        return Storage::url($filename);
     }
 
     private function buildQueryBuilder($array, $type, $parent, RelationFilterQueryBuilder $queryBuilder)

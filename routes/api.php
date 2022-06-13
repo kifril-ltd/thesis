@@ -20,7 +20,12 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/report', [ReportController::class, 'makeReport']);
+
+Route::prefix('/report')->group(function() {
+    Route::post('/build', [ReportController::class, 'makeReport']);
+    Route::get('/municipality', [ReportController::class, 'getMunicipalityList']);
+    Route::get('/boilerrooms', [ReportController::class, 'getBoilerRoomList']);
+});
 
 
 Route::prefix('/relfilter')->group(function() {
