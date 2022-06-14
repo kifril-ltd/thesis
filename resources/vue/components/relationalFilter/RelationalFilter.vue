@@ -2,6 +2,8 @@
   <div class="container mt-3 mb-3">
     <object-card ref="objectModal" @choose="chooseTable" />
     <column-modal ref="columnModal" :object="currObject" @choose="chooseAttribute" />
+    <save-modal ref="saveModal" @choose="chooseName"></save-modal>
+    <open-modal :result="relFilters" ref="openModal"></open-modal>
     <ul class="nav nav-tabs" id="myTab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab">
@@ -10,6 +12,11 @@
       </li>
       <li class="nav-item">
         <button class="nav-link" data-bs-toggle="tab" data-bs-target="#file" type="button" role="tab"> Колонки </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#summary" type="button" role="tab">
+          Итого
+        </button>
       </li>
     </ul>
     <div class="tab-content">
@@ -26,11 +33,15 @@
       <div class="tab-pane fade" id="file" role="tabpanel">
         <column-component :tables="objects"></column-component>
       </div>
+      <div class="tab-pane fade" id="summary" role="tabpanel">
+        <summary-component :summary-data="objects"></summary-component>
+      </div>
     </div>
 
     <div class="d-flex align-items-center justify-content-center">
-      <energy-button class="not-full btn-primary ms-1 me-1"> Открыть</energy-button>
-      <energy-button class="not-full btn-success ms-1 me-1" @click="printData"> Сохранить</energy-button>
+      <energy-button class="not-full btn-primary ms-1 me-1" @click="openRelFilters"> Открыть</energy-button>
+      <energy-button class="not-full btn-success ms-1 me-1" @click="printData"> Сгенерировать отчет</energy-button>
+      <energy-button class="not-full btn-success ms-1 me-1" @click="dbSave"> Сохранить </energy-button>
     </div>
   </div>
 </template>
@@ -43,12 +54,27 @@ import { EnergyButton } from '@/ui';
 
 import { tableSymbol, userSymbol } from '@/store';
 import ColumnComponent from '@/components/relationalFilter/ColumnComponent/ColumnComponent';
-// import {ReportApi} from "@/api";
+
+import SummaryComponent from '@/components/relationalFilter/summaryComponent/SummaryComponent';
+
 import axios from 'axios';
+import SaveModal from '@/components/relationalFilter/saveModal/SaveModal';
+
+import { RelationFilterApi } from '@/api';
+import OpenModal from '@/components/relationalFilter/openModal/OpenModal';
 
 export default {
   name: 'RelationalFilter',
-  components: { ColumnComponent, TreeComponent, ObjectCard, ColumnModal, EnergyButton },
+  components: {
+    OpenModal,
+    SaveModal,
+    SummaryComponent,
+    ColumnComponent,
+    TreeComponent,
+    ObjectCard,
+    ColumnModal,
+    EnergyButton,
+  },
   inject: {
     stateTable: {
       from: tableSymbol,
@@ -86,6 +112,7 @@ export default {
       currGroup: null,
       currObject: null,
       header: null,
+      relFilters: null,
     };
   },
   watch: {
@@ -101,28 +128,45 @@ export default {
     },
   },
   methods: {
-       printData() {
-          let data = {
-              "where": [this.treeData],
-              "select": this.objects
-          }
-           axios.post('/api/relfilter/build',
-               {data})
-               .then(response => {
-                   const url = response.data;
-                   const link = document.createElement('a');
-                   link.href = url;
-                   link.setAttribute('download', 'report.xlsx'); //or any other extension
-                   document.body.appendChild(link);
-                   link.click();
-               }).catch(error => {
-               console.log(error)
-           })
-      },
+    async openRelFilters() {
+      this.relFilters = await RelationFilterApi.getRelationFilters();
+      this.$refs.openModal.openModal();
+    },
+    async chooseName(name) {
+      let data = {
+        title: name,
+        settings: {
+          where: this.treeData,
+          select: this.objects,
+        },
+      };
+      let result = await RelationFilterApi.save(data);
+    },
+    dbSave() {
+      this.$refs.saveModal.openModal();
+    },
+    printData() {
+      let data = {
+        where: [this.treeData],
+        select: this.objects,
+      };
+      axios
+        .post('/api/relfilter/build', { data })
+        .then(response => {
+          const url = response.data;
+          const link = document.createElement('a');
+          link.href = url;
+          link.setAttribute('download', 'report.xlsx'); //or any other extension
+          document.body.appendChild(link);
+          link.click();
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
     chooseTable(table) {
       this.currTable = table;
       this.addObject(this.treeData, this.currGroup);
-      console.log(table);
     },
     makeObject(item) {
       this.$refs.objectModal.openModal();
