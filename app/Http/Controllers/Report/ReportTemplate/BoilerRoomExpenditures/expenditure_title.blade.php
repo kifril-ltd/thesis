@@ -7,7 +7,7 @@
 </head>
 <body>
     <div class="page-center">
-        <p class="title">ЗАТРАТЫ НА СОЖЕРЖАНИЕ КОТЕЛЬНЫХ</p>
+        <p class="title">ЗАТРАТЫ НА СОДЕРЖАНИЕ КОТЕЛЬНЫХ</p>
         @if($municipality)
         <p class="title">МУНИЦИПАЛИТЕТ: {{ $municipality }} </p>
         @else

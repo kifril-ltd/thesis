@@ -61,7 +61,7 @@
         <router-link v-if="!user" class="me-4 btn text-start" :to="{ name: 'login' }">Авторизация</router-link>
         <template v-if="user">
           <router-link v-if="!toggleButton" class="me-4 btn text-start" :to="{ name: 'report' }"
-            >Реляционный фильтр</router-link
+            >Конструктор отчетов</router-link
           >
           <router-link v-if="toggleButton" class="me-4 btn text-start" :to="{ name: 'home' }">К таблицам</router-link>
         </template>

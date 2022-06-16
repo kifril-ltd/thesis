@@ -38,23 +38,27 @@ class RelationFilterQueryBuilder
 
     public function buildQuery()
     {
+        $where = '';
+        $flag = true;
         $selectSubQuery = $this->getSelectSubQuery();
         $whereSubQuery = $this->getWhereSubQuery();
         $groupBySubQuery = $this->getGroupBySubQuery();
         if ($whereSubQuery === '(())' || $whereSubQuery === '()') {
             $where = '';
+            $flag = false;
+
         }
         if (count($this->join) < 2){
             $joinSubQuery = array_key_first($this->join);
             $from = ' FROM ' . $joinSubQuery;
-            if ($where) {
+            if ($flag) {
                 $where = ' WHERE ' . $whereSubQuery;
             }
         }
         else {
             $joinSubQuery = $this->getJoinSubQuery();
             $from = ' FROM ' . $joinSubQuery;
-            if ($where) {
+            if ($flag) {
                 $where = ' AND' . $whereSubQuery;
             }
 

@@ -26,18 +26,34 @@
               v-if="!item.parentName || someData == 0"
               :hints="parentLogic"
               class="ms-2 me-2"
+              :is-select="item.prefix"
               @change-value="changePrefix"
             ></energy-select>
             <template v-else>
-              <energy-select :hints="groupObjectLogic" @change-value="changePrefix" class="ms-2 me-2"></energy-select>
+              <energy-select
+                :is-select="item.prefix"
+                :hints="groupObjectLogic"
+                @change-value="changePrefix"
+                class="ms-2 me-2"
+              ></energy-select>
               <template v-if="item.isField">
-                <energy-select :hints="fieldLogic" @change-value="changeCondition" class="ms-2 me-2"></energy-select>
-                <energy-input @change-text="changeCondVal" class="me-2 static-input"></energy-input>
+                <energy-select
+                  :is-select="item.condition"
+                  :hints="fieldLogic"
+                  @change-value="changeCondition"
+                  class="ms-2 me-2"
+                ></energy-select>
+                <energy-input :value="item.value" @change-text="changeCondVal" class="me-2 static-input"></energy-input>
               </template>
             </template>
             <template v-if="someData == 0 && item.isField">
-              <energy-select :hints="fieldLogic" @change-value="changeCondition" class="ms-2 me-2"></energy-select>
-              <energy-input @change-text="changeCondVal" class="me-2 static-input"></energy-input>
+              <energy-select
+                :is-select="item.condition"
+                :hints="fieldLogic"
+                @change-value="changeCondition"
+                class="ms-2 me-2"
+              ></energy-select>
+              <energy-input :value="item.value" @change-text="changeCondVal" class="me-2 static-input"></energy-input>
             </template>
 
             {{ item.name }}

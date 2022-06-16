@@ -5,6 +5,7 @@
       <button type="button" class="btn-close" @click="closeModal" aria-label="Close"></button>
     </div>
     <div class="modal-body d-flex flex-column p-3">
+      <div>Название</div>
       <energy-input @change-text="changeName"></energy-input>
     </div>
     <div class="modal-footer">

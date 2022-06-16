@@ -19,7 +19,6 @@ export default {
     isSelect: {
       required: false,
       type: String,
-      default: '',
     },
   },
 };

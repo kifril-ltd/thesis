@@ -111,16 +111,18 @@ export default {
     tableMap() {
       let result = this.tables;
       for (let i = 0; i < result.length; i++) {
-        result[i].columns = result[i].columns.map(({ caption, meta_object_id, object }) => {
-          return {
-            caption: caption,
-            meta_object_id: meta_object_id,
-            object: object,
-            isChecked: false,
-            aggregation: '',
-            isGroupBy: false,
-          };
-        });
+        result[i].columns = result[i].columns.map(
+          ({ caption, meta_object_id, object, isChecked, aggregation, isGroupBy }) => {
+            return {
+              caption: caption,
+              meta_object_id: meta_object_id,
+              object: object,
+              isChecked: isChecked ? isChecked : false,
+              aggregation: aggregation ? aggregation : '',
+              isGroupBy: isGroupBy ? isGroupBy : false,
+            };
+          },
+        );
       }
       return result;
     },

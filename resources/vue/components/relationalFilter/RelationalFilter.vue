@@ -3,7 +3,7 @@
     <object-card ref="objectModal" @choose="chooseTable" />
     <column-modal ref="columnModal" :object="currObject" @choose="chooseAttribute" />
     <save-modal ref="saveModal" @choose="chooseName"></save-modal>
-    <open-modal :result="relFilters" ref="openModal"></open-modal>
+    <open-modal :result="relFilters" ref="openModal" @openRelation="openRelation"></open-modal>
     <ul class="nav nav-tabs" id="myTab" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab">
@@ -31,10 +31,11 @@
         </ul>
       </div>
       <div class="tab-pane fade" id="file" role="tabpanel">
-        <column-component :tables="objects"></column-component>
+        <column-component v-if="objFromDb" :tables="objFromDb"></column-component>
+        <!--        <column-component v-if="openFlag" :tables="objFromDb"></column-component>-->
       </div>
       <div class="tab-pane fade" id="summary" role="tabpanel">
-        <summary-component :summary-data="objects"></summary-component>
+        <summary-component v-if="objFromDb" :summary-data="objFromDb"></summary-component>
       </div>
     </div>
 
@@ -88,6 +89,11 @@ export default {
       await this.stateTable.fetchTables();
     }
   },
+  async mounted() {
+    let result = await RelationFilterApi.getTables(null);
+    this.objFromDb = result.result;
+    console.log(1, this.objFromDb);
+  },
   data() {
     return {
       // структура
@@ -113,6 +119,8 @@ export default {
       currObject: null,
       header: null,
       relFilters: null,
+      openFlag: false,
+      objFromDb: null,
     };
   },
   watch: {
@@ -128,6 +136,13 @@ export default {
     },
   },
   methods: {
+    openRelation(result) {
+      this.treeData = result.result.where;
+      console.log(2, this.objFromDb);
+      this.objFromDb = result.result.select;
+      console.log(3, this.objFromDb);
+      this.openFlag = true;
+    },
     async openRelFilters() {
       this.relFilters = await RelationFilterApi.getRelationFilters();
       this.$refs.openModal.openModal();
@@ -137,7 +152,7 @@ export default {
         title: name,
         settings: {
           where: this.treeData,
-          select: this.objects,
+          select: this.objFromDb,
         },
       };
       let result = await RelationFilterApi.save(data);
@@ -148,7 +163,7 @@ export default {
     printData() {
       let data = {
         where: [this.treeData],
-        select: this.objects,
+        select: this.objFromDb,
       };
       axios
         .post('/api/relfilter/build', { data })
@@ -258,7 +273,11 @@ export default {
   },
   computed: {
     objects() {
-      return this.stateTable.state.tables;
+      if (this.openFlag) {
+        return this.objFromDb;
+      } else {
+        return this.stateTable.state.tables;
+      }
     },
     user() {
       return this.userState.state.user;
