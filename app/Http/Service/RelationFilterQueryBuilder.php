@@ -59,7 +59,7 @@ class RelationFilterQueryBuilder
             $joinSubQuery = $this->getJoinSubQuery();
             $from = ' FROM ' . $joinSubQuery;
             if ($flag) {
-                $where = ' AND' . $whereSubQuery;
+                $where = ' AND ' . $whereSubQuery;
             }
 
         }

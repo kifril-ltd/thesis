@@ -31,7 +31,7 @@
     </thead>
     <tbody>
     <tr>
-        <td class="tg-left">1. Утсановленная мощность,<br>Гкал/час</td>
+        <td class="tg-left">1. Установленная мощность,<br>Гкал/час</td>
         @foreach($boilers as $boiler)
             <td class="tg-center"> {{ $boiler->boiler_installed_capacity }}</td>
         @endforeach

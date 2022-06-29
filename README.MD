@@ -17,7 +17,7 @@
 ### Установка Docker
 
 С помощью следующих команд мы настроим репозиторий для установки Docker
-    
+
     sudo apt update
     sudo apt install apt-transport-https ca-certificates curl software-properties-common
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -27,7 +27,7 @@
 
     sudo apt install docker-ce
 
-Теперь Docker должен быть доступен в системе, проверить можно командой 
+Теперь Docker должен быть доступен в системе, проверить можно командой
 
     sudo systemctl status docker
 
@@ -45,7 +45,7 @@
 
 # Развертывание проекта
 
-Клонируйте репозиторий с проектом 
+Клонируйте репозиторий с проектом
 
     git clone ...
 
@@ -85,7 +85,7 @@
 
 Заходим в контейнер с `php`
 
-    [sudo] docker exec -it thermal-power-engineering_php sh
+    [sudo] docker exec -it thesis_php sh
 
 Выполняем внутри контейнера следующие команды
 
@@ -98,7 +98,7 @@
 
     npm install
 
-Пробуем запустить `frontend` 
+Пробуем запустить `frontend`
 
     npm run watch или npm run dev
 
@@ -112,10 +112,10 @@
 
 И запускаем в контейнере приложения `frontend`
 
-    [sudo] docker exec -it thermal-power-engineering_php npm run watch или dev
-    
+    [sudo] docker exec -it thesis_php npm run watch или dev
+
 Также, при возникновении конфликтов сидов при их обновлении нужно вести команды:
 
     php artisan migrate:refresh
     php artisan db:seed
-    
+
